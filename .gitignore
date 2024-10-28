@@ -1,0 +1,7 @@
+venv
+__pycache__
+*.pyc
+*.pyo
+.env
+openvino_exported_model
+optimum_cache
