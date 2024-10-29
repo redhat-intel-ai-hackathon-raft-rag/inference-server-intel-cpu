@@ -5,3 +5,5 @@ __pycache__
 .env
 openvino_exported_model
 optimum_cache
+models
+qwen_lora

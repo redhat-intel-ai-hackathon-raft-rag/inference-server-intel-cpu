@@ -9,4 +9,5 @@ optimum-cli export openvino \
     --scale-estimation  \
     --sensitivity-metric 'weight_quantization_error' \
     --cache_dir ./optimum_cache \
+    --disable-convert-tokenizer \
     ./openvino_exported_model

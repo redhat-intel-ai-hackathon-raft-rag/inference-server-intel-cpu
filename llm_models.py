@@ -6,9 +6,10 @@ nltk.download('punkt_tab')
 from nltk.tokenize import sent_tokenize
 
 
-model_id = "./openvino_exported_model"
+# model_id = "./models/qwen2.5-1.5B_lora_sft"
+model_id = "./qwen_lora"
 model = OVModelForCausalLM.from_pretrained(model_id)
-tokenizer = AutoTokenizer.from_pretrained(model_id)
+tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen2.5-1.5B-Instruct")
 
 ov_pipe = pipeline(
     "text-generation",
@@ -18,7 +19,7 @@ ov_pipe = pipeline(
 
 def generate_answer(question, context):
     results = ov_pipe(
-        f"{context}{question}",
+        f"{context} {question}",
         cache_implementation="offloaded_static",
         num_return_sequences=10,
         min_new_tokens=5,
