@@ -6,9 +6,10 @@ nltk.download('punkt_tab')
 from nltk.tokenize import sent_tokenize
 
 
-# model_id = "./models/qwen2.5-1.5B_lora_sft"
-model_id = "./qwen_lora"
-model = OVModelForCausalLM.from_pretrained(model_id)
+# model_id = "./qwen_lora"
+model_id = "./models/qwen2.5-1.5B_lora_sft"
+quantization_config = OVWeightQuantizationConfig(bits=4, sym=False, ratio=0.8, quant_method="awq", scale_estimation=True, dataset="wikitext2")
+model = OVModelForCausalLM.from_pretrained(model_id, quantization_config=quantization_config)
 tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen2.5-1.5B-Instruct")
 
 ov_pipe = pipeline(
