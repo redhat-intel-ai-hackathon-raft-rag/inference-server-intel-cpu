@@ -4,7 +4,9 @@ from llama_index.core.schema import NodeWithScore, TextNode
 # from llm_config import SUPPORTED_LLM_MODELS
 from embedding import embedding
 from llm_models import llm
+from rag.graph_store import GraphStore
 from rag.response_synthesizer import response_synthesize
+from rag.vector_store import VectorStore
 
 
 class Inference:
@@ -30,8 +32,9 @@ class Inference:
         nodes.extend(self.vector_store.retrieve(query))
         nodes.extend(self.graph_store.retrieve(query))
         # node post processing
-        for processor in self.node_processors:
-            nodes = processor.postprocess_nodes(nodes)
+        if self.node_processors is not None:
+            for processor in self.node_processors:
+                nodes = processor.postprocess_nodes(nodes)
         # response synthesis
         return response_synthesize(query, nodes)
 
@@ -47,11 +50,15 @@ class Inference:
 
 
 if __name__ == "__main__":
-    nodewithscore = NodeWithScore(
-        node=TextNode(
-            id_=str(uuid.uuid4()),
-            text="The author worked at a local restaurant."
+    nodes = [
+        TextNode(
+            id_="919ea626-2850-4bd9-824f-26689a0d164a",
+            text="The author grew up in a large town."
         ),
-        score=1.0
-    )
-    print(nodewithscore)
+        TextNode(
+            id_="15d6ed4e-bc13-44eb-a1d3-d32baf56d70b",
+            text="The author went to college in the city."
+        ),
+    ]
+    vector_store = VectorStore(nodes)
+    graph_store = GraphStore()

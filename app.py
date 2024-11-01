@@ -1,6 +1,5 @@
 from flask import Flask, request, jsonify
-from validator import \
-    request_validation, invalid_request
+from request_validation import request_validation
 from rag.graph_store import GraphStore
 from rag.vector_store import VectorStore
 from rag.node_processor import node_processors
@@ -25,8 +24,7 @@ app = Flask(__name__)
 def chat_completions():
     data = request.json
     question, context = request_validation(data)
-    invalid_request(data)
-    answer = inference.get_response(question)
+    answer = inference.get_response(question, context)
     data["messages"].append({
         "role": "system",
         "content": answer

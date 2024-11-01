@@ -1,5 +1,5 @@
 from llama_index.embeddings.huggingface_openvino import OpenVINOEmbedding
-from dev import device
+from device import device
 
 embedding = OpenVINOEmbedding(
     model_id_or_path="BAAI/bge-small-en-v1.5",

@@ -1,6 +1,8 @@
 from llama_index.graph_stores.neo4j import Neo4jPropertyGraphStore
 from llama_index.core.indices.property_graph import PropertyGraphIndex
+from llama_index.core import StorageContext
 
+from rag.data_loader import load_json_nodes, load_raw_documents
 from rag.response_synthesizer import response_synthesize
 
 
@@ -16,6 +18,24 @@ class GraphStore:
 
     def insert(self, document):
         self.index.insert(document)
+
+    def load_raw_documents(self, input_dir: str):
+        documents = load_raw_documents(input_dir)
+        self.index = PropertyGraphIndex.from_documents(
+            documents=documents,
+            storage_context=StorageContext.from_defaults(
+                graph_store=self.graph_store,
+            )
+        )
+
+    def load_json_nodes(self, input_dir: str, text_field: str):
+        nodes = load_json_nodes(input_dir, text_field)
+        self.index = PropertyGraphIndex(
+                nodes=nodes,
+                storage_context=StorageContext.from_defaults(
+                    vector_store=self.vector_store,
+                )
+            )
 
     def get_retriever(self, top_k=3):
         return self.index.as_retriever(
@@ -90,8 +110,8 @@ class GraphStore:
 
 
 if __name__ == '__main__':
-    graph_store = GraphStore()
     from llama_index.core import Document
+    graph_store = GraphStore()
     document = Document(
         text="The author grew up in a small town.",
     )

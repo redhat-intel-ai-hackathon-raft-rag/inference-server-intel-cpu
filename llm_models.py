@@ -3,7 +3,7 @@ from transformers import AutoTokenizer
 from optimum.intel import OVModelForCausalLM, OVWeightQuantizationConfig
 from llama_index.llms.openvino import OpenVINOLLM
 from prompt_template import completion_to_prompt, messages_to_prompt
-from dev import device
+from device import device
 
 if os.path.exists("./qwen_lora_openvino"):
     model_id = "./qwen_lora_openvino"

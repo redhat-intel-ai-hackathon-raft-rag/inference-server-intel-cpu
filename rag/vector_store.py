@@ -3,11 +3,10 @@ from llama_index.core import VectorStoreIndex
 from llama_index.core import StorageContext
 from llama_index.core import Settings
 from llama_index.core.schema import TextNode
-from llama_index.core.retrievers import VectorIndexRetriever
 from llama_index.core.vector_stores import VectorStoreQuery
 from llama_index.vector_stores.qdrant import QdrantVectorStore
 from llama_index.embeddings.fastembed import FastEmbedEmbedding
-
+from rag.data_loader import load_json_nodes, load_raw_documents
 from rag.response_synthesizer import response_synthesize
 
 
@@ -30,12 +29,26 @@ class VectorStore:
             prefer_grpc=True
         )
 
+    def load_raw_documents(self, input_dir: str):
+        documents = load_raw_documents(input_dir)
+        self.index = VectorStoreIndex.from_documents(
+            documents=documents,
+            storage_context=StorageContext.from_defaults(
+                vector_store=self.vector_store,
+            )
+        )
+
+    def load_json_documents(self, input_dir: str, text_field: str):
+        nodes = load_json_nodes(input_dir, text_field)
         self.index = VectorStoreIndex(
                 nodes=nodes,
                 storage_context=StorageContext.from_defaults(
                     vector_store=self.vector_store,
                 )
             )
+
+    def insert(self, document):
+        self.index.insert(document)
 
     def add_nodes(self, nodes):
         """
@@ -53,6 +66,18 @@ class VectorStore:
         """
         self.index.insert_nodes(nodes)
 
+    def get_retriever(self, top_k=3):
+        return self.index.as_retriever(
+            similarity_top_k=top_k,
+        )
+
+    def retrieve(self, text: str, top_k=3):
+        """
+        retrieving nodes from vector store
+        """
+        retriver = self.get_retriever(top_k)
+        return retriver.retrieve(text)
+
     def delete_nodes(self, node_ids):
         """
         examples:
@@ -66,19 +91,6 @@ class VectorStore:
 
     def get_index(self):
         return self.index
-
-    def get_retriever(self, top_k=3):
-        return VectorIndexRetriever(
-            index=self.index,
-            similarity_top_k=top_k,
-        )
-
-    def retrieve(self, text: str, top_k=3):
-        """
-        retrieving nodes from vector store
-        """
-        retriver = self.get_retriever(top_k)
-        return retriver.retrieve(text)
 
 
 if __name__ == '__main__':

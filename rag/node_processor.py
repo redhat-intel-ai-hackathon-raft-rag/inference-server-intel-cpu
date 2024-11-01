@@ -1,7 +1,7 @@
 from llama_index.core.postprocessor import \
     SimilarityPostprocessor, KeywordNodePostprocessor
 from llama_index.postprocessor.openvino_rerank import OpenVINORerank
-from dev import device
+from device import device
 
 
 sim_processor = SimilarityPostprocessor(similarity_cutoff=0.75)

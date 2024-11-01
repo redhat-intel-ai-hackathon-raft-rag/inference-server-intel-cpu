@@ -1,9 +1,6 @@
 from llama_index.core.response_synthesizers import ResponseMode
 from llama_index.core import get_response_synthesizer
 
-# response_synthesizer = get_response_synthesizer(
-#     response_mode="tree_summarize",
-# )
 
 response_synthesizer = get_response_synthesizer(
     response_mode=ResponseMode.COMPACT,
