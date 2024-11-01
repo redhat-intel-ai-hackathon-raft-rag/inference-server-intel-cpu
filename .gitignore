@@ -7,3 +7,5 @@ openvino_exported_model
 optimum_cache
 models
 qwen_lora
+qwen_lora_openvino
+data
