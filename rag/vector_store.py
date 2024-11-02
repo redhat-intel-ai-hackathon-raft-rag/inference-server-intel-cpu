@@ -8,6 +8,9 @@ from llama_index.vector_stores.qdrant import QdrantVectorStore
 from llama_index.embeddings.fastembed import FastEmbedEmbedding
 from rag.data_loader import load_json_nodes, load_raw_documents
 from rag.response_synthesizer import response_synthesize
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 embed_model = FastEmbedEmbedding("BAAI/bge-base-en")

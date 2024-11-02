@@ -4,7 +4,9 @@ from rag.graph_store import GraphStore
 from rag.vector_store import VectorStore
 from rag.node_processor import node_processors
 from rag.inference import Inference
+from dotenv import load_dotenv
 
+load_dotenv()
 vector_store = VectorStore()
 graph_store = GraphStore()
 node_processors = [
@@ -15,8 +17,6 @@ node_processors = [
     node_processors.get("llama_processor"),
 ]
 inference = Inference(vector_store, graph_store, node_processors)
-
-
 app = Flask(__name__)
 
 

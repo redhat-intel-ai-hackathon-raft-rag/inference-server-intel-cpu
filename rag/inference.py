@@ -7,6 +7,9 @@ from llm_models import llm
 from rag.graph_store import GraphStore
 from rag.response_synthesizer import response_synthesize
 from rag.vector_store import VectorStore
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 class Inference:
@@ -16,6 +19,8 @@ class Inference:
         self.node_processors = node_processors
         self.vector_store = vector_store
         self.graph_store = graph_store
+        self.vector_store.load_json_nodes("data", "text")
+        self.graph_store.load_json_nodes("data", "text")
         # llm_model_configuration = \
         #   SUPPORTED_LLM_MODELS['English']['qwen2.5-1.5b-instruct']
         # llm.max_new_tokens = 2048
