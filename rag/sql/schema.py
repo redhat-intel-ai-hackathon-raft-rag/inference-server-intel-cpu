@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, \
+from sqlalchemy import UUID, Column, Integer, String, Text, \
     ForeignKey, BigInteger
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
@@ -53,9 +53,9 @@ class WebpageLink(Base):
 # Books Table
 class Book(Base):
     __tablename__ = 'books'
-    id = Column(Integer, primary_key=True)
+    id = Column(Text, primary_key=True)
     # Nullable book title
-    title = Column(Text)
+    title = Column(Text, index=True)
     created_at = Column(BigInteger, nullable=False)
     updated_at = Column(BigInteger)
     deleted_at = Column(BigInteger)
@@ -68,31 +68,34 @@ class Book(Base):
     )
     cited_by_relation = relationship(
         "BookCite",
-        foreign_keys='[BookCite.cite_id]',
+        foreign_keys='[BookCite.cited_book_id]',
         back_populates="cited_book"
     )
     documents_relation = relationship(
         "BookDocument",
         back_populates="book"
     )
+    # TODO title, author, published similarities to identify books
 
 
 # Books Cites Table
 class BookCite(Base):
     __tablename__ = 'books_cites'
-
-    id = Column(Integer, primary_key=True)  # Primary key
-    # Foreign key to cited book
-    cite_id = Column(
-        Integer,
-        ForeignKey('books.id', ondelete='CASCADE'),
-        nullable=False
-    )
+    # Composite primary key
     # Foreign key to citing book
     book_id = Column(
-        Integer,
+        Text,
         ForeignKey('books.id', ondelete='CASCADE'),
-        nullable=False
+        nullable=False,
+        primary_key=True
+    )
+    # Composite primary key
+    # Foreign key to cited book
+    cited_book_id = Column(
+        Text,
+        ForeignKey('books.id', ondelete='CASCADE'),
+        nullable=False,
+        primary_key=True
     )
     created_at = Column(BigInteger, nullable=False)
     updated_at = Column(BigInteger)
@@ -106,7 +109,7 @@ class BookCite(Base):
     )
     cited_book = relationship(
         "Book",
-        foreign_keys=[cite_id],
+        foreign_keys=[cited_book_id],
         back_populates="cited_by_relation"
     )
 
@@ -115,12 +118,12 @@ class BookCite(Base):
 class BookDocument(Base):
     __tablename__ = 'books_documents'
 
-    id = Column(String, primary_key=True)
+    id = Column(Text, primary_key=True)
     # Non-null document text
     text = Column(Text, nullable=False)
     # Foreign key to the Book table
     book_id = Column(
-        Integer,
+        Text,
         ForeignKey('books.id', ondelete='CASCADE'),
         nullable=False
     )
@@ -134,5 +137,5 @@ class BookDocument(Base):
         back_populates="documents_relation"
     )
 
-# Create all tables
+
 Base.metadata.create_all(engine)

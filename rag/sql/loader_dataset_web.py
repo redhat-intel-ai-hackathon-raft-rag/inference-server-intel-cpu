@@ -63,7 +63,8 @@ def insert_dataset_web(path: str) -> Generator[Dict[str, Any], None, None]:
                     created_at=current_timestamp()
                 )
                 batch_webpage_links.append(webpage_link)
-        if len(batch_webpages) % batch_size == 0:
+
+        def persist_batch(batch_webpages, batch_webpage_links):
             try:
                 session.add_all(batch_webpages)
                 session.flush()
@@ -71,7 +72,7 @@ def insert_dataset_web(path: str) -> Generator[Dict[str, Any], None, None]:
                 session.commit()
                 batch_webpages = []
                 batch_webpage_links = []
-            except IntegrityError as e:
+            except IntegrityError:
                 session.rollback()
                 print("Failed to insert webpages")
                 json_webpages = [
@@ -95,6 +96,9 @@ def insert_dataset_web(path: str) -> Generator[Dict[str, Any], None, None]:
                     json.dump(json_webpages, f)
                 with open(f"dataset/insertion_failed/dataset_web/webpage_links/{current_timestamp()}.json", 'w') as f:
                     json.dump(json_webpage_links, f)
+        if len(batch_webpages) % batch_size == 0:
+            persist_batch(batch_webpages, batch_webpage_links)
+    persist_batch(batch_webpages, batch_webpage_links)
 
 
 if __name__ == '__main__':
