@@ -1,9 +1,10 @@
 from llama_index.core.response_synthesizers import ResponseMode
 from llama_index.core import get_response_synthesizer
-
+from llm_models import llm
 
 response_synthesizer = get_response_synthesizer(
     response_mode=ResponseMode.COMPACT,
+    llm=llm
 )
 
 

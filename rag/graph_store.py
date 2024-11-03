@@ -1,12 +1,10 @@
 from llama_index.graph_stores.neo4j import Neo4jPropertyGraphStore
 from llama_index.core.indices.property_graph import PropertyGraphIndex
 from llama_index.core import StorageContext
-
-from rag.data_loader import load_json_nodes, load_raw_documents
 from rag.response_synthesizer import response_synthesize
-from dotenv import load_dotenv
-
-load_dotenv()
+from llama_index.core.schema import TextNode
+from llm_models import llm
+from embedding import embedding
 
 
 class GraphStore:
@@ -17,28 +15,22 @@ class GraphStore:
     )
     index = PropertyGraphIndex.from_existing(
         graph_store,
+        llm=llm,
+        embed_model=embedding,
     )
 
-    def insert(self, document):
-        self.index.insert(document)
-
-    def load_raw_documents(self, input_dir: str):
-        documents = load_raw_documents(input_dir)
-        self.index = PropertyGraphIndex.from_documents(
-            documents=documents,
-            storage_context=StorageContext.from_defaults(
-                graph_store=self.graph_store,
-            )
-        )
-
-    def load_json_nodes(self, input_dir: str, text_field: str):
-        nodes = load_json_nodes(input_dir, text_field)
-        self.index = PropertyGraphIndex(
+    def add_nodes(self, nodes):
+        if self.index is None:
+            self.index = PropertyGraphIndex(
                 nodes=nodes,
                 storage_context=StorageContext.from_defaults(
-                    vector_store=self.vector_store,
-                )
+                    graph_store=self.graph_store,
+                ),
+                llm=llm,
+                embed_model=embedding
             )
+        else:
+            self.index.insert_nodes(nodes)
 
     def get_retriever(self, top_k=3):
         return self.index.as_retriever(
@@ -79,13 +71,6 @@ class GraphStore:
 
         self.graph_store.upsert_relations(relations)
 
-    def upsert_llama_nodes(self, source_chunks):
-        """
-        examples:
-        source_chunk = TextNode(id_="source", text="My llama has an index.")
-        """
-        self.graph_store.upsert_llama_nodes(source_chunks)
-
     def get_node_by_ids(self, node_ids):
         return self.graph_store.get(ids=node_ids)
 
@@ -99,9 +84,6 @@ class GraphStore:
     def get_rel_map(self, entity_nodes: list):
         return self.graph_store.get_rel_map(entity_nodes)
 
-    def get_llama_nodes(self, ids):
-        return self.graph_store.get_llama_nodes(ids)
-
     def _delete_nodes_by_ids(self, node_ids):
         return self.graph_store.delete(node_ids)
 
@@ -113,16 +95,23 @@ class GraphStore:
 
 
 if __name__ == '__main__':
-    from llama_index.core import Document
+    from llama_index.core.settings import Settings
+    from llama_index.core.schema import TextNode
+    from llm_models import llm
+    from embedding import embedding
+    Settings.embed_model = embedding
+    Settings.llm = llm
     graph_store = GraphStore()
-    document = Document(
-        text="The author grew up in a small town.",
+    text_nodes = TextNode(
+        id_="919ea626-2850-4bd9-824f-26689a0d164a",
+        text="The author grew up in a large town.",
     )
-    graph_store.insert(document)
-    document = Document(
+    graph_store.add_nodes([text_nodes])
+    text_nodes = TextNode(
+        id_="15d6ed4e-bc13-44eb-a1d3-d32baf56d70b",
         text="The author went to college in the city.",
     )
-    graph_store.insert(document)
+    graph_store.add_nodes([text_nodes])
     nodes = graph_store.retrieve("Where did the author grow up?")
     print(nodes)
     print(response_synthesize("Where did the author grow up?", nodes))

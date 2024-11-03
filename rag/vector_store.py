@@ -6,21 +6,19 @@ from llama_index.core.schema import TextNode
 from llama_index.core.vector_stores import VectorStoreQuery
 from llama_index.vector_stores.qdrant import QdrantVectorStore
 from llama_index.embeddings.fastembed import FastEmbedEmbedding
-from rag.data_loader import load_json_nodes, load_raw_documents
 from rag.response_synthesizer import response_synthesize
 from dotenv import load_dotenv
-
+from embedding import embedding
 load_dotenv()
 
-
-embed_model = FastEmbedEmbedding("BAAI/bge-base-en")
-Settings.embed_model = embed_model
+# embedding = FastEmbedEmbedding()
+Settings.embed_model = embedding
 
 
 class VectorStore:
-    index = VectorStoreIndex
+    index: VectorStoreIndex = None
 
-    def __init__(self, nodes=None):
+    def __init__(self, collection_name="default"):
         # if nodes is None:
         #     raise ValueError("nodes must be provided")
         self.vector_store = QdrantVectorStore(
@@ -28,27 +26,9 @@ class VectorStore:
                 host="localhost",
                 port=6333
             ),
-            collection_name="webpages",
+            collection_name=collection_name,
             prefer_grpc=True
         )
-
-    def load_raw_documents(self, input_dir: str):
-        documents = load_raw_documents(input_dir)
-        self.index = VectorStoreIndex.from_documents(
-            documents=documents,
-            storage_context=StorageContext.from_defaults(
-                vector_store=self.vector_store,
-            )
-        )
-
-    def load_json_documents(self, input_dir: str, text_field: str):
-        nodes = load_json_nodes(input_dir, text_field)
-        self.index = VectorStoreIndex(
-                nodes=nodes,
-                storage_context=StorageContext.from_defaults(
-                    vector_store=self.vector_store,
-                )
-            )
 
     def insert(self, document):
         self.index.insert(document)
@@ -67,7 +47,18 @@ class VectorStore:
             ),
         ]
         """
-        self.index.insert_nodes(nodes)
+        if self.index is None:
+            self.index = VectorStoreIndex(
+                nodes=nodes,
+                storage_context=StorageContext.from_defaults(
+                    vector_store=self.vector_store,
+                ),
+                embed_model=embedding
+            )
+        else:
+            self.index.insert_nodes(
+                nodes=nodes
+            )
 
     def get_retriever(self, top_k=3):
         return self.index.as_retriever(
@@ -106,7 +97,7 @@ if __name__ == '__main__':
             id_="15d6ed4e-bc13-44eb-a1d3-d32baf56d70b",
             text="The author went to college in the city.")
     ]
-    vector_store = VectorStore(nodes)
+    vector_store = VectorStore()
     nodes = [
         TextNode(
             id_="6d5b9b48-1b38-4e41-bac5-031794bbbaaa",

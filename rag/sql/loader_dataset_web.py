@@ -1,15 +1,18 @@
-from datetime import datetime
+import os
 import json
+from datetime import datetime
 from typing import Any, Dict, Generator
 from urllib.parse import urlparse
+import uuid
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 from rag.sql.schema import Webpage, WebpageLink
 from rag.sql.engine import engine
 
-# delete all rows
 
 jsonl_file = 'dataset/dataset_web.jsonl'
+Session = sessionmaker(bind=engine)
+session = Session()
 
 
 def current_timestamp():
@@ -22,9 +25,42 @@ def load_dataset_web(path: str) -> Generator[Dict[str, Any], None, None]:
             yield json.loads(line)
 
 
+def persist_batch(batch_webpages, batch_webpage_links):
+    try:
+        session.add_all(batch_webpages)
+        session.flush()
+        session.add_all(batch_webpage_links)
+    except IntegrityError:
+        session.rollback()
+        print("Failed to insert webpages")
+        json_webpages = [
+            {
+                'id': webpage.id,
+                'text': webpage.text,
+                'domain': webpage.domain,
+                'title': webpage.title,
+                'created_at': webpage.created_at
+            }
+            for webpage in batch_webpages]
+        json_webpage_links = [
+            {
+                'id': webpage_link.id,
+                'link': webpage_link.link,
+                'webpage_id': webpage_link.webpage_id,
+                'created_at': webpage_link.created_at
+            }
+            for webpage_link in batch_webpage_links]
+        os.makedirs("dataset/insertion_failed/dataset_web/webpages", exist_ok=True)
+        with open(f"dataset/insertion_failed/dataset_web/webpages/{current_timestamp()}.json", 'w') as f:
+            json.dump(json_webpages, f)
+        os.makedirs("dataset/insertion_failed/dataset_web/webpage_links", exist_ok=True)
+        with open(f"dataset/insertion_failed/dataset_web/webpage_links/{current_timestamp()}.json", 'w') as f:
+            json.dump(json_webpage_links, f)
+    finally:
+        session.commit()
+
+
 def insert_dataset_web(path: str) -> Generator[Dict[str, Any], None, None]:
-    Session = sessionmaker(bind=engine)
-    session = Session()
     web_dataset_loader = load_dataset_web(path)
     batch_size = 1000
     batch_webpages = []
@@ -58,46 +94,16 @@ def insert_dataset_web(path: str) -> Generator[Dict[str, Any], None, None]:
         if links is not None and len(links) > 0:
             for link in links:
                 webpage_link = WebpageLink(
+                    id=uuid.uuid4().hex,
                     link=link,
                     webpage_id=webpage.id,
                     created_at=current_timestamp()
                 )
                 batch_webpage_links.append(webpage_link)
-
-        def persist_batch(batch_webpages, batch_webpage_links):
-            try:
-                session.add_all(batch_webpages)
-                session.flush()
-                session.add_all(batch_webpage_links)
-                session.commit()
-                batch_webpages = []
-                batch_webpage_links = []
-            except IntegrityError:
-                session.rollback()
-                print("Failed to insert webpages")
-                json_webpages = [
-                    {
-                        'id': webpage.id,
-                        'text': webpage.text,
-                        'domain': webpage.domain,
-                        'title': webpage.title,
-                        'created_at': webpage.created_at
-                    }
-                    for webpage in batch_webpages]
-                json_webpage_links = [
-                    {
-                        'id': webpage_link.id,
-                        'link': webpage_link.link,
-                        'webpage_id': webpage_link.webpage_id,
-                        'created_at': webpage_link.created_at
-                    }
-                    for webpage_link in batch_webpage_links]
-                with open(f"dataset/insertion_failed/dataset_web/webpages/{current_timestamp()}.json", 'w') as f:
-                    json.dump(json_webpages, f)
-                with open(f"dataset/insertion_failed/dataset_web/webpage_links/{current_timestamp()}.json", 'w') as f:
-                    json.dump(json_webpage_links, f)
         if len(batch_webpages) % batch_size == 0:
             persist_batch(batch_webpages, batch_webpage_links)
+            batch_webpages = []
+            batch_webpage_links = []
     persist_batch(batch_webpages, batch_webpage_links)
 
 
