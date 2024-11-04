@@ -100,20 +100,10 @@ class Inference:
                 [node.node.id_ for node in nodes]
             )
         ).all()
-        # print(nodes)
-        # updated_nodes = []
         for node in nodes:
             for item in items:
                 if str(item.id) == str(node.node.id_):
-                    # updated_nodes.append(
-                    #     NodeWithScore(
-                    #         node=TextNode(id_=node.node.id_, text=item.output),
-                    #         score=node.score
-                    #     )
-                    # )
                     node.node.text = item.output
-        print(nodes)
-        # print(updated_nodes)
         return nodes
 
     def has_significant_similar_query(self, nodes: List[NodeWithScore]):
@@ -123,13 +113,11 @@ class Inference:
         )
 
     def generate_response_with_raft(self, nodes: List[NodeWithScore]):
-        # pick the node with the highest score
         nodes.sort(key=lambda x: x.score, reverse=True)
         return {
             "response": nodes[0].node.text,
             "streaming": False
         }
-        # return nodes[0].node.text
 
 
 if __name__ == "__main__":
