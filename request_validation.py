@@ -1,26 +1,116 @@
 import tiktoken
 
 
-cutoff_rate = 0.1
-enc = tiktoken.encoding_for_model("Qwen/Qwen2.5-1.5B-Instruct")
-max_tokens = 4096  # Set a suitable max token limit
+enc = tiktoken.get_encoding("o200k_base")
+max_tokens = 4096
 
 
 def request_validation(data):
-    context = "",
-    question = ""
+    context = ""
+    query = ""
     try:
         for item in data['messages']:
             if item['role'] == 'system':
-                context += item['content']
+                if context == "":
+                    context += item['content']
+                else:
+                    context += "\n" + item['content']
             elif item['role'] == 'user':
-                question = item['content']
+                if query == "":
+                    query += item['content']
+                else:
+                    query += "\n" + item['content']
             elif item['role'] not in ['system', 'user']:
                 raise ValueError(f"Invalid role: {item['role']}")
     except KeyError as e:
         raise ValueError(f"KeyError: {e}")
-    total_tokens = len(enc.encode(question + context))
+    total_tokens = len(enc.encode(query + context))
     if total_tokens > max_tokens:
         raise ValueError(
             f"Total tokens: {total_tokens} exceeds max tokens: {max_tokens}")
-    return question, context
+    return query, context
+
+
+if __name__ == "__main__":
+    data = {
+        "messages": [
+            {
+                "role": "system",
+                "content": "The author grew up in a large town."
+            },
+            {
+                "role": "user",
+                "content": "The author went to college in the city."
+            }
+        ]
+    }
+    print(request_validation(data))
+    try:
+        max_tokens = 10
+        print(request_validation(data))
+    except ValueError as e:
+        print(e)
+        max_tokens = 4096
+    data = {
+        "messages": [
+            {
+                "role": "system",
+                "content": "The author grew up in a large town."
+            },
+            {
+                "role": "user",
+                "content": "The author went to college in the city."
+            },
+            {
+                "role": "system",
+                "content": "The author went to college in the city."
+            }
+        ]
+    }
+    print(request_validation(data))
+    data = {
+        "messages": [
+            {
+                "role": "system",
+                "content": "The author grew up in a large town."
+            },
+            {
+                "role": "user",
+                "content": "The author went to college in the city."
+            },
+            {
+                "role": "system",
+                "content": "The author went to college in the city."
+            },
+            {
+                "role": "user",
+                "content": "The author went to college in the city."
+            }
+        ]
+    }
+    print(request_validation(data))
+    data = {
+        "messages": [
+            {
+                "role": "system",
+                "content": "The author grew up in a large town."
+            },
+            {
+                "role": "user",
+                "content": "The author went to college in the city."
+            },
+            {
+                "role": "system",
+                "content": "The author went to college in the city."
+            },
+            {
+                "role": "user",
+                "content": "The author went to college in the city."
+            },
+            {
+                "role": "system",
+                "content": "The author went to college in the city."
+            }
+        ]
+    }
+    print(request_validation(data))

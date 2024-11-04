@@ -6,13 +6,13 @@ from device import device
 
 sim_processor = SimilarityPostprocessor(similarity_cutoff=0.75)
 
-keyword_postprocessor = KeywordNodePostprocessor(
-    required_keywords=["word1", "word2"], exclude_keywords=["word3", "word4"]
-)
 
 reranker = OpenVINORerank(
     model_id_or_path="BAAI/bge-reranker-base", device=device)
 
+keyword_postprocessor = KeywordNodePostprocessor(
+    required_keywords=["word1", "word2"], exclude_keywords=["word3", "word4"]
+)
 
 if __name__ == "__main__":
     from llama_index.core.schema import TextNode
