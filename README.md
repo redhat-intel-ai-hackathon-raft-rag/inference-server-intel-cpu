@@ -1,6 +1,8 @@
+```bash
 python -m venv .venv &&
 source .venv/bin/activate &&
-pip install -r requirement.txt &&
+pip install -r requirement.txt
+```
 
 ## setup quantized OpenVEVO format model
 
@@ -24,7 +26,7 @@ enter the variables according to the infra
 
 ## setup SQL database
 
-```python
+```bash
 python -m rag.sql.loader_dataset_web
 python -m rag.sql.loader_dataset_web_document
 python -m rag.sql.loader_dataset_book
@@ -33,15 +35,17 @@ python -m rag.sql.loader_dataset_book_document
 
 ## setup Vector database
 
-```python
-python -m rag.sql.load_data2index
+```bash
+python -m rag.load_data2index
 ```
 
 ## Run application
 
+```bash
 python -m app
-
 ```
+
+```bash
 curl -X POST http://localhost:5000/v1/chat/completions \
 -H "Content-Type: application/json" \
 -d '{
