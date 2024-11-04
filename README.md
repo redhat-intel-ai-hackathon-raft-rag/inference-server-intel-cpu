@@ -5,9 +5,9 @@ pip install -r requirement.txt
 ```
 
 ## setup quantized OpenVEVO format model
-
+```bash
 ./scripts/download_model.sh &&
-
+```
 ## setup infra
 
 setup local postgres, qdrant, neo4j(optional)
