@@ -131,7 +131,7 @@ curl -N -X POST http://flask-app-route-eichi-uehara-2-dev.apps.cluster.intel.san
     },
     {
       "role": "user",
-      "content": "What makes RedHat and Microsoft as Tier 1 enterprise solution vendors"
+      "content": "What makes RedHat as Tier 1 enterprise solution vendors"
     }
   ]
 }'
@@ -148,7 +148,7 @@ curl -N -X POST http://flask-app-route-eichi-uehara-2-dev.apps.cluster.intel.san
     },
     {
       "role": "user",
-      "content": "Did Robert Noyce create the culture of Silicon valley?"
+      "content": "How did Robert Noyce affect the culture of Silicon valley?"
     }
   ]
 }'

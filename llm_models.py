@@ -22,8 +22,8 @@ else:
     tokenizer.save_pretrained("./qwen_lora_openvino")
 llm = OpenVINOLLM(
     model_id_or_path="qwen_lora_openvino",
-    context_window=3900,
-    max_new_tokens=256,
+    context_window=7800,
+    max_new_tokens=1000,
     model_kwargs={"ov_config": {
         "KV_CACHE_PRECISION": "u8",
         "DYNAMIC_QUANTIZATION_GROUP_SIZE": "32",

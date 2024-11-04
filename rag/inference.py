@@ -16,7 +16,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 Session = sessionmaker(bind=engine)
-session = Session()
 
 COLLECTION_SCHEMA_MAP = {
     "webpage_raft": WebpageRaft,
@@ -92,19 +91,27 @@ class Inference:
         )
 
     def handle_raft_query(self, nodes: List[NodeWithScore], collection_name):
-        items = session.query(
-            COLLECTION_SCHEMA_MAP[collection_name].id,
-            COLLECTION_SCHEMA_MAP[collection_name].output
-        ).filter(
-            COLLECTION_SCHEMA_MAP[collection_name].id.in_(
-                [node.node.id_ for node in nodes]
-            )
-        ).all()
-        for node in nodes:
-            for item in items:
-                if str(item.id) == str(node.node.id_):
-                    node.node.text = item.output
-        return nodes
+        try:
+            with Session() as session:
+                items = session.query(
+                    COLLECTION_SCHEMA_MAP[collection_name].id,
+                    COLLECTION_SCHEMA_MAP[collection_name].output
+                ).filter(
+                    COLLECTION_SCHEMA_MAP[collection_name].id.in_(
+                        [node.node.id_ for node in nodes]
+                    )
+                ).all()
+                for node in nodes:
+                    for item in items:
+                        if str(item.id) == str(node.node.id_):
+                            node.node.text = item.output
+                session.commit()
+                return nodes
+        except Exception as e:
+            session.rollback()
+            raise e
+        finally:
+            session.close()
 
     def has_significant_similar_query(self, nodes: List[NodeWithScore]):
         return any(
