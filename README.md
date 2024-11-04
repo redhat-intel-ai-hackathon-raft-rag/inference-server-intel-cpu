@@ -81,3 +81,41 @@ curl -N -X POST http://localhost:5000/v1/chat/completions \
   ]
 }'
 ```
+
+### Red Hat OpenShift deployed endpoint
+
+Spec: CPU 15 cores and memory 31G
+
+```bash
+curl -N -X POST http://flask-app-route-eichi-uehara-2-dev.apps.cluster.intel.sandbox1234.opentlc.com/v1/chat/completions \
+-H "Content-Type: application/json" \
+-d '{
+  "messages": [
+    {
+      "role": "system",
+      "content": "Provide answer with references if available."
+    },
+    {
+      "role": "user",
+      "content": "What is the role of polyamines in cell growth and proliferation?"
+    }
+  ]
+}'
+```
+
+```bash
+curl -N -X POST http://flask-app-route-eichi-uehara-2-dev.apps.cluster.intel.sandbox1234.opentlc.com/v1/chat/completions \
+-H "Content-Type: application/json" \
+-d '{
+  "messages": [
+    {
+      "role": "system",
+      "content": "Provide answer with references if available."
+    },
+    {
+      "role": "user",
+      "content": "How to understand the role of the polyamines"
+    }
+  ]
+}'
+```

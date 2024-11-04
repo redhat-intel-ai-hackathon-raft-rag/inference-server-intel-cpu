@@ -1,3 +1,4 @@
+import os
 from llama_index.graph_stores.neo4j import Neo4jPropertyGraphStore
 from llama_index.core.indices.property_graph import PropertyGraphIndex
 from llama_index.core import StorageContext
@@ -7,12 +8,17 @@ from llm_models import llm
 from embedding import embedding
 
 
+GRAPHDB_USERNAME = os.getenv("GRAPHDB_USERNAME")
+GRAPHDB_PASSWORD = os.getenv("GRAPHDB_PASSWORD")
+GRAPHDB_URL = os.getenv("GRAPHDB_URL")
+
+
 class GraphStore:    
     def __init__(self):
         self.graph_store = Neo4jPropertyGraphStore(
-            username="neo4j",
-            password="neo4jneo4j",
-            url="bolt://localhost:7687",
+            username=GRAPHDB_USERNAME,
+            password=GRAPHDB_PASSWORD,
+            url=GRAPHDB_URL,
         )
         self.index = PropertyGraphIndex.from_existing(
             graph_store,

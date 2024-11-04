@@ -1,3 +1,4 @@
+import os
 import qdrant_client
 from llama_index.core import VectorStoreIndex
 from llama_index.core import StorageContext
@@ -13,6 +14,9 @@ load_dotenv()
 # embedding = FastEmbedEmbedding()
 Settings.embed_model = embedding
 
+VECTORDB_HOST = os.getenv("VECTORDB_HOST")
+VECTORDB_PORT = os.getenv("VECTORDB_PORT")
+
 
 class VectorStore:
     index: VectorStoreIndex = None
@@ -22,8 +26,8 @@ class VectorStore:
         #     raise ValueError("nodes must be provided")
         self.vector_store = QdrantVectorStore(
             client=qdrant_client.QdrantClient(
-                host="localhost",
-                port=6333
+                host=VECTORDB_HOST,
+                port=VECTORDB_PORT
             ),
             collection_name=collection_name,
             prefer_grpc=True
