@@ -5,8 +5,7 @@ from llama_index.core import Settings
 from llama_index.core.schema import TextNode
 from llama_index.core.vector_stores import VectorStoreQuery
 from llama_index.vector_stores.qdrant import QdrantVectorStore
-from llama_index.embeddings.fastembed import FastEmbedEmbedding
-from rag.response_synthesizer import response_synthesize
+# from llama_index.embeddings.fastembed import FastEmbedEmbedding
 from dotenv import load_dotenv
 from embedding import embedding
 load_dotenv()
@@ -29,6 +28,10 @@ class VectorStore:
             collection_name=collection_name,
             prefer_grpc=True
         )
+        self.index = VectorStoreIndex.from_vector_store(
+            vector_store=self.vector_store,
+            embed_model=embedding
+        )
 
     def insert(self, document):
         self.index.insert(document)
@@ -47,18 +50,9 @@ class VectorStore:
             ),
         ]
         """
-        if self.index is None:
-            self.index = VectorStoreIndex(
-                nodes=nodes,
-                storage_context=StorageContext.from_defaults(
-                    vector_store=self.vector_store,
-                ),
-                embed_model=embedding
-            )
-        else:
-            self.index.insert_nodes(
-                nodes=nodes
-            )
+        self.index.insert_nodes(
+            nodes=nodes
+        )
 
     def get_retriever(self, top_k=3):
         return self.index.as_retriever(
@@ -107,4 +101,5 @@ if __name__ == '__main__':
     vector_store.add_nodes(nodes)
     nodes = vector_store.retrieve("Where did the author grow up?")
     print(nodes)
+    from rag.response_synthesizer import response_synthesize
     print(response_synthesize("Where did the author grow up?", nodes))

@@ -15,24 +15,24 @@ def load_data2index():
             vector_store.add_nodes(temp_nodes)
             temp_nodes = []
     vector_store.add_nodes(temp_nodes)
-    temp_nodes = []
     vector_store = VectorStore(collection_name="webpage_raft")
+    temp_nodes = []
     for node in load_sqldatabase_webpage_raft():
         temp_nodes.append(node)
         if len(temp_nodes) % 10000 == 0:
             vector_store.add_nodes(temp_nodes)
             temp_nodes = []
     vector_store.add_nodes(temp_nodes)
-    temp_nodes = []
     vector_store = VectorStore(collection_name="book_document")
+    temp_nodes = []
     for node in load_sqldatabase_book_document():
         temp_nodes.append(node)
         if len(temp_nodes) % 10000 == 0:
             vector_store.add_nodes(temp_nodes)
             temp_nodes = []
     vector_store.add_nodes(temp_nodes)
-    temp_nodes = []
     vector_store = VectorStore(collection_name="book_raft")
+    temp_nodes = []
     for node in load_sqldatabase_book_raft():
         temp_nodes.append(node)
         if len(temp_nodes) % 10000 == 0:

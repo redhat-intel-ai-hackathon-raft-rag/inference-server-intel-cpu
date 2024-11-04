@@ -7,14 +7,22 @@ response_synthesizer = get_response_synthesizer(
     llm=llm
 )
 
+stream_response_synthesizer = get_response_synthesizer(
+    response_mode=ResponseMode.COMPACT,
+    llm=llm,
+    streaming=True
+)
 
-def response_synthesize(text, nodes):
+
+def response_synthesize(text, nodes, streaming=False):
     """
     given a text and retrieved nodes, synthesize a response with LLM
     text: user query
     nodes: retrieved nodes from component of retriever
     llm: global setting with llmma index Setting module
     """
+    if streaming:
+        return stream_response_synthesizer.synthesize(text, nodes)
     return response_synthesizer.synthesize(text, nodes)
 
 

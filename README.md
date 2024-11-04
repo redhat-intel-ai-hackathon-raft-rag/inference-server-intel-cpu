@@ -14,11 +14,11 @@ setup local postgres, qdrant, neo4j(optional)
 
 or
 
-setup kubernetes cluster by referencing, then port-forward to local
+setup kubernetes cluster then port-forward to local by referencing below
 
 https://github.com/redhat-intel-ai-hackathon-raft-rag/infra
 
-both approach takes with 10 minutes
+both approaches take within 10 minutes
 
 ## setup .env
 
@@ -36,7 +36,10 @@ python -m rag.sql.loader_dataset_book_document
 ## setup Vector database
 
 ```bash
-python -m rag.load_data2index
+python -m rag.sql.load_data2index_book_document
+python -m rag.sql.load_data2index_book_raft
+python -m rag.sql.load_data2index_webpage_document
+python -m rag.sql.load_data2index_webpage_raft
 ```
 
 ## Run application
@@ -46,7 +49,7 @@ python -m app
 ```
 
 ```bash
-curl -X POST http://localhost:5000/v1/chat/completions \
+curl -N -X POST http://localhost:5000/v1/chat/completions \
 -H "Content-Type: application/json" \
 -d '{
   "messages": [
@@ -57,6 +60,23 @@ curl -X POST http://localhost:5000/v1/chat/completions \
     {
       "role": "user",
       "content": "What is the role of polyamines in cell growth and proliferation?"
+    }
+  ]
+}'
+```
+
+```bash
+curl -N -X POST http://localhost:5000/v1/chat/completions \
+-H "Content-Type: application/json" \
+-d '{
+  "messages": [
+    {
+      "role": "system",
+      "content": "Provide answer with references if available."
+    },
+    {
+      "role": "user",
+      "content": "How to understand the role of the polyamines"
     }
   ]
 }'

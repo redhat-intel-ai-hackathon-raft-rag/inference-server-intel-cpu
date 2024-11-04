@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Response
 from request_validation import request_validation
 # from rag.graph_store import GraphStore
 from rag.vector_store import VectorStore
@@ -16,7 +16,7 @@ vector_stores = [
 # graph_store = GraphStore()
 node_processors = [
     sim_processor,
-    reranker
+    # reranker
 ]
 inference = Inference(
     vector_stores=vector_stores,
@@ -30,11 +30,15 @@ def chat_completions():
     data = request.json
     query, context = request_validation(data)
     answer = inference.get_response(query, context)
-    data["messages"].append({
-        "role": "system",
-        "content": answer
-    })
-    return jsonify(data["messages"])
+    response = answer["response"]
+    if answer["streaming"]:
+        return Response(response.response_gen, content_type='text/event-stream')
+    else:
+        data["messages"].append({
+            "role": "system",
+            "content": response,
+        })
+        return jsonify(data["messages"])
 
 
 if __name__ == '__main__':

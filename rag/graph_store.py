@@ -7,17 +7,18 @@ from llm_models import llm
 from embedding import embedding
 
 
-class GraphStore:
-    graph_store = Neo4jPropertyGraphStore(
-        username="neo4j",
-        password="neo4jneo4j",
-        url="bolt://localhost:7687",
-    )
-    index = PropertyGraphIndex.from_existing(
-        graph_store,
-        llm=llm,
-        embed_model=embedding,
-    )
+class GraphStore:    
+    def __init__(self):
+        self.graph_store = Neo4jPropertyGraphStore(
+            username="neo4j",
+            password="neo4jneo4j",
+            url="bolt://localhost:7687",
+        )
+        self.index = PropertyGraphIndex.from_existing(
+            graph_store,
+            llm=llm,
+            embed_model=embedding,
+        )
 
     def add_nodes(self, nodes):
         if self.index is None:
